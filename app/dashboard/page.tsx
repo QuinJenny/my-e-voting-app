@@ -1,13 +1,42 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { mockElections } from '@/lib/mockData';
+import { createClientComponentClient } from '@/lib/supabase';
 
 export default function Dashboard() {
+  const [userName, setUserName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClientComponentClient();
   const ongoing = mockElections.filter(e => e.status === 'ongoing');
   const upcoming = mockElections.filter(e => e.status === 'upcoming');
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        setUserName(profile?.full_name || user.email?.split('@')[0] || 'Voter');
+      }
+      setLoading(false);
+    };
+
+    getUser();
+  }, [supabase]);
+
+  if (loading) {
+    return <div className="min-h-screen bg-neutral-950 flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-10">
       <div>
-        <h1 className="text-4xl font-bold">Good morning, Quin 👋</h1>
+        <h1 className="text-4xl font-bold">Good morning, {userName} 👋</h1>
         <p className="text-neutral-400 mt-2">Here's an overview of the current elections</p>
       </div>
 
