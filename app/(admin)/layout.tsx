@@ -2,19 +2,21 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@/lib/supabase';
 import { LogOut, Home, PlusCircle, BarChart3 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const supabase = createClientComponentClient();
+  const router = useRouter();
 
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        window.location.href = '/login';
+        router.replace('/login');
         return;
       }
 
@@ -26,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       if (profile?.role !== 'admin') {
         alert("Access Denied: Admin privileges required.");
-        window.location.href = '/dashboard';
+        router.replace('/dashboard');
         return;
       }
 
@@ -34,11 +36,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
 
     checkAdmin();
-  }, [supabase]);
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event: any, session: any) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        router.replace('/login');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase, router]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/login';
+    if (confirm("Are you sure you want to logout?")) {
+      await supabase.auth.signOut();
+    }
   };
 
   if (isAdmin === null) {

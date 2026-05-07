@@ -1,17 +1,61 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@/lib/supabase';
 import { Home, List, CheckSquare, User, LogOut, Bell, Search, Shield } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClientComponentClient();
+  const router = useRouter();
 
-  const handleLogout = () => {
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace('/login');
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+
+      setUser({
+        ...user,
+        full_name: profile?.full_name || user.email?.split('@')[0] || 'Voter'
+      });
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event: any, session: any) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        router.replace('/login');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase, router]);
+
+  const handleLogout = async () => {
     if (confirm("Are you sure you want to logout?")) {
-      window.location.href = "/login";
+      await supabase.auth.signOut();
     }
   };
+
+  if (loading) {
+    return <div className="min-h-screen bg-neutral-950 flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="flex h-screen bg-neutral-950 text-neutral-100 overflow-hidden">
@@ -74,9 +118,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="absolute -top-1 -right-1 bg-red-500 text-[10px] w-4 h-4 rounded-full flex items-center justify-center">3</div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#008751] flex items-center justify-center font-medium text-sm">QJ</div>
+              <div className="w-9 h-9 rounded-full bg-[#008751] flex items-center justify-center font-medium text-sm">
+                {user?.full_name?.[0] || 'U'}
+              </div>
               <div>
-                <div className="font-medium text-sm">Quin Jayne</div>
+                <div className="font-medium text-sm">{user?.full_name || 'User'}</div>
                 <div className="text-xs text-neutral-500">Voter</div>
               </div>
             </div>
