@@ -29,18 +29,18 @@ export default function Dashboard() {
 
       {/* Ongoing */}
       <div>
-        <h2 className="text-2xl font-semibold mb-6">Ongoing Elections</h2>
+        <h2 className="text-2xl font-semibold mb-6">Ongoing Elections</h2>      
         <div className="grid md:grid-cols-2 gap-6">
           {ongoing.map((election) => (
             <div key={election.id} className="bg-neutral-900 border border-neutral-800 rounded-3xl p-8">
-              <h3 className="text-xl font-semibold">{election.title}</h3>
+              <h3 className="text-xl font-semibold">{election.title}</h3>       
               <p className="text-neutral-400 mt-3 line-clamp-2">{election.description}</p>
               <div className="mt-8 flex justify-between items-end">
                 <div>
                   <p className="text-xs text-neutral-500">Ends</p>
                   <p className="font-medium">{election.endDate}</p>
                 </div>
-                <a href={`/dashboard/elections/${election.id}`} className="bg-[#008751] hover:bg-[#00693f] px-8 py-3 rounded-2xl text-white font-medium">
+                <a href={`/dashboard/elections/${election.id}`} className="bg-[#008751] hover:bg-[#00693f] px-8 py-3 rounded-2xl text-white font-medium">       
                   Vote Now
                 </a>
               </div>
@@ -51,12 +51,12 @@ export default function Dashboard() {
 
       {upcoming.length > 0 && (
         <div>
-          <h2 className="text-2xl font-semibold mb-6">Upcoming Elections</h2>
+          <h2 className="text-2xl font-semibold mb-6">Upcoming Elections</h2>   
           <div className="grid md:grid-cols-2 gap-6">
             {upcoming.map((election) => (
               <div key={election.id} className="bg-neutral-900 border border-neutral-800 rounded-3xl p-8 opacity-75">
-                <h3 className="text-xl font-semibold">{election.title}</h3>
-                <p className="text-neutral-400 mt-3">{election.description}</p>
+                <h3 className="text-xl font-semibold">{election.title}</h3>     
+                <p className="text-neutral-400 mt-3">{election.description}</p> 
                 <p className="mt-6 text-sm text-neutral-500">Starts: {election.startDate}</p>
               </div>
             ))}
