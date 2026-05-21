@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, use } from 'react';
-import { createClientComponentClient } from '@/lib/supabase';
+import { useSupabase } from '@/hooks/useSupabase';
+import { mockElections } from '@/lib/mockData';
 import { ArrowLeft, CheckCircle, Lock } from 'lucide-react';
 
 type ElectionRecord = {
@@ -22,7 +23,7 @@ type CandidateRecord = {
 
 export default function VotingBooth({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const supabase = createClientComponentClient();
+  const supabase = useSupabase();
   const [election, setElection] = useState<ElectionRecord | null>(null);
   const [candidates, setCandidates] = useState<CandidateRecord[]>([]);
   const [isLoadingElection, setIsLoadingElection] = useState(true);
@@ -64,6 +65,25 @@ export default function VotingBooth({ params }: { params: Promise<{ id: string }
         const electionList = (elections ?? []) as ElectionRecord[];
 
         if (electionList.length === 0) {
+          const mockElection = mockElections.find(e => e.id === id) ?? mockElections[0];
+          if (mockElection) {
+            setElection({
+              id: mockElection.id,
+              title: mockElection.title,
+              description: mockElection.description,
+              start_date: mockElection.startDate,
+              end_date: mockElection.endDate,
+              status: mockElection.status,
+            });
+            setCandidates(mockElection.candidates.map(c => ({
+              id: c.id,
+              name: c.name,
+              party: c.party,
+              manifesto: c.manifesto,
+            })));
+            setIsLoadingElection(false);
+            return;
+          }
           setError('No elections found.');
           setIsLoadingElection(false);
           return;
@@ -95,7 +115,19 @@ export default function VotingBooth({ params }: { params: Promise<{ id: string }
       }
 
       setElection(selectedElection);
-      setCandidates(candidateRows ?? []);
+      if (candidateRows && candidateRows.length > 0) {
+        setCandidates(candidateRows ?? []);
+      } else {
+        const mockElection = mockElections.find(e => e.id === selectedElection.id);
+        if (mockElection) {
+          setCandidates(mockElection.candidates.map(c => ({
+            id: c.id,
+            name: c.name,
+            party: c.party,
+            manifesto: c.manifesto,
+          })));
+        }
+      }
       setIsLoadingElection(false);
     };
 

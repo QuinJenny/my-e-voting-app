@@ -3,12 +3,12 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@/lib/supabase';
+import { useSupabase } from '@/hooks/useSupabase';
 import { LogOut, Home, PlusCircle, BarChart3 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const supabase = createClientComponentClient();
+  const supabase = useSupabase();
   const router = useRouter();
 
   useEffect(() => {

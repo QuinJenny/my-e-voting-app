@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { createClientComponentClient } from '@/lib/supabase';
+import { useSupabase } from '@/hooks/useSupabase';
 import { Plus, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const id = resolvedParams.id;
-  const supabase = createClientComponentClient();
+  const supabase = useSupabase();
   const router = useRouter();
 
   const [election, setElection] = useState<any>(null);

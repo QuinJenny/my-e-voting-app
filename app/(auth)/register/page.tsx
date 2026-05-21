@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { createClientComponentClient } from '@/lib/supabase';
+import { useSupabase } from '@/hooks/useSupabase';
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClientComponentClient();
+  const supabase = useSupabase();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

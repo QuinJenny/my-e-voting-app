@@ -2,12 +2,12 @@
 
 import { useState, useEffect, use } from 'react';
 import { mockElections } from '@/lib/mockData';
-import { createClientComponentClient } from '@/lib/supabase';
+import { useSupabase } from '@/hooks/useSupabase';
 import { ArrowLeft, Trophy, Users } from 'lucide-react';
 
 export default function ResultsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const supabase = createClientComponentClient();
+  const supabase = useSupabase();
   const election = mockElections.find(e => e.id === id);
 
   const [votes, setVotes] = useState<any[]>([]);

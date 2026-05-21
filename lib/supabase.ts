@@ -7,7 +7,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-let browserClient: ReturnType<typeof createBrowserClient> | null = null;
+type BrowserClient = ReturnType<typeof createBrowserClient>;
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __voteSecureSupabaseClient: BrowserClient | undefined;
+}
 
 // Client Component Client (singleton in browser to avoid multiple GoTrueClient instances)
 export const createClientComponentClient = () => {
@@ -15,9 +20,9 @@ export const createClientComponentClient = () => {
     return createBrowserClient(supabaseUrl, supabaseAnonKey);
   }
 
-  if (!browserClient) {
-    browserClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
+  if (!globalThis.__voteSecureSupabaseClient) {
+    globalThis.__voteSecureSupabaseClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
   }
 
-  return browserClient;
+  return globalThis.__voteSecureSupabaseClient;
 };

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@/lib/supabase';
+import { useSupabase } from '@/hooks/useSupabase';
+import { mockElections } from '@/lib/mockData';
 import Link from 'next/link';
 
 type ElectionListItem = {
@@ -14,7 +15,7 @@ type ElectionListItem = {
 };
 
 export default function ElectionsPage() {
-  const supabase = createClientComponentClient();
+  const supabase = useSupabase();
   const [elections, setElections] = useState<ElectionListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -29,28 +30,27 @@ export default function ElectionsPage() {
         .select('id, title, description, start_date, end_date, status')
         .order('start_date', { ascending: true });
 
-      if (error) {
-        setLoadError(error.message);
-        setIsLoading(false);
-        return;
+      if (!error && data && data.length > 0) {
+        const mapped = data.map((election: any) => ({
+          id: election.id,
+          title: election.title,
+          description: election.description ?? 'No description provided',
+          startDate: election.start_date ?? '',
+          endDate: election.end_date ?? '',
+          status: (election.status as 'ongoing' | 'upcoming' | 'ended') ?? 'upcoming',
+        }));
+        setElections(mapped);
+      } else {
+        setElections(mockElections.map(e => ({
+          id: e.id,
+          title: e.title,
+          description: e.description,
+          startDate: e.startDate,
+          endDate: e.endDate,
+          status: e.status,
+        })));
       }
-
-      if (!data || data.length === 0) {
-        setLoadError('No elections found in your database yet.');
-        setIsLoading(false);
-        return;
-      }
-
-      const mapped = data.map((election: any) => ({
-        id: election.id,
-        title: election.title,
-        description: election.description ?? 'No description provided',
-        startDate: election.start_date ?? '',
-        endDate: election.end_date ?? '',
-        status: (election.status as 'ongoing' | 'upcoming' | 'ended') ?? 'upcoming',
-      }));
-
-      setElections(mapped);
+      
       setIsLoading(false);
     };
 

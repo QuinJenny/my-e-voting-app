@@ -15,7 +15,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
       if (!user) {
         router.replace('/login');
         return;
@@ -29,7 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       setUser({
         ...user,
-        full_name: profile?.full_name || user.email?.split('@')[0] || 'Voter'
+        full_name: profile?.full_name || user.user_metadata?.full_name || 'User'
       });
       setLoading(false);
     };
@@ -50,6 +51,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleLogout = async () => {
     if (confirm("Are you sure you want to logout?")) {
       await supabase.auth.signOut();
+      router.replace('/login');
+      router.refresh();
     }
   };
 
@@ -76,7 +79,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Link href="/dashboard/my-votes" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-neutral-800 transition">
               <CheckSquare size={20} /> My Votes
             </Link>
-            <Link href="/dashboard/admin/elections" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-neutral-800 transition">
+            <Link href="/admin/elections" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-neutral-800 transition">
               <Shield size={20} /> Admin
             </Link>
             <Link href="/dashboard/profile" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-neutral-800 transition">
@@ -123,7 +126,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               <div>
                 <div className="font-medium text-sm">{user?.full_name || 'User'}</div>
-                <div className="text-xs text-neutral-500">Voter</div>
+                <div className="text-xs text-neutral-500">{user?.email || ''}</div>
               </div>
             </div>
           </div>
